@@ -21,8 +21,8 @@ SCRIPT;
         Admin::script($script);
 
         return <<<'EOT'
-<li>
-    <a href="javascript:void(0);" class="container-refresh">
+<li class="nav-item">
+    <a href="javascript:void(0);" class="container-refresh nav-link">
       <i class="fa fa-refresh"></i>
     </a>
 </li>
