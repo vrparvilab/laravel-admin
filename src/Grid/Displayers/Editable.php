@@ -201,7 +201,7 @@ STR;
         $this->value = htmlentities($this->value);
 
         $attributes = [
-            'href'       => '#',
+            'href'       => 'javascript:void(0)',
             'class'      => "$class",
             'data-type'  => $this->type,
             'data-pk'    => "{$this->getKey()}",
