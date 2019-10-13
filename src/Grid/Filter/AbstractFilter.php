@@ -84,11 +84,6 @@ abstract class AbstractFilter
     protected $view = 'admin::filter.where';
 
     /**
-     * @var string
-     */
-    protected $size = 'default-size';
-
-    /**
      * @var Collection
      */
     public $group;
@@ -410,30 +405,6 @@ abstract class AbstractFilter
     }
 
     /**
-     * Get size.
-     *
-     * @return string
-     */
-    public function getSize()
-    {
-        return $this->size;
-    }
-
-    /**
-     * Set size.
-     *
-     * @param string $size
-     *
-     * @return $this
-     */
-    public function setSize($size)
-    {
-        $this->size = $size;
-
-        return $this;
-    }
-
-    /**
      * Get column name of current filter.
      *
      * @return string
@@ -497,7 +468,6 @@ abstract class AbstractFilter
         return array_merge([
             'id'        => $this->id,
             'column'    => $this->column,
-            'size'      => $this->size,
             'name'      => $this->formatName($this->column),
             'label'     => $this->label,
             'value'     => $this->value ?: $this->defaultValue,
