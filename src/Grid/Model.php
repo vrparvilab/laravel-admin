@@ -590,7 +590,7 @@ class Model
             ]);
 
             $this->queries->push([
-                'method'    => 'join',
+                'method'    => 'leftJoin',
                 'arguments' => $this->joinParameters($relation),
             ]);
 
