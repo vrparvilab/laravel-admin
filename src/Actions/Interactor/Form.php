@@ -52,6 +52,21 @@ class Form extends Interactor
      * @param string $column
      * @param string $label
      *
+     * @return Field\Display
+     */
+    public function display($label = '')
+    {
+        $field = new Field\Display(null, $this->formatLabel($label));
+
+        $this->addField($field);
+
+        return $field;
+    }
+
+    /**
+     * @param string $column
+     * @param string $label
+     *
      * @return Field\Text
      */
     public function email($column, $label = '')
