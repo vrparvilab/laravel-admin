@@ -119,10 +119,6 @@ abstract class RowAction extends GridAction
         return $modelClass::findOrFail($key);
     }
 
-    public function display($value)
-    {
-    }
-
     /**
      * Render row action.
      *
