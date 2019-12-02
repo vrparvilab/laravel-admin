@@ -306,6 +306,8 @@ SCRIPT;
                 _action: '{$this->getCalledClass()}',
             });
         
+            disableModalSubmitButton(target)
+
             $.ajax({
                 method: '{$this->method}',
                 url: '{$this->getHandleRoute()}',
@@ -314,7 +316,7 @@ SCRIPT;
                     resolve([data, target]);
                 },
                 error:function(request){
-                    reject(request);
+                    reject([request, target]);
                 }
             });
         });
@@ -328,10 +330,13 @@ SCRIPT;
     public function handleActionPromise()
     {
         $resolve = <<<'SCRIPT'
+        
 var actionResolver = function (data) {
 
             var response = data[0];
             var target   = data[1];
+                
+            enableModalSubmitButton(target)
                 
             if (typeof response !== 'object') {
                 return $.admin.swal({type: 'error', title: 'Oops!'});
@@ -372,11 +377,17 @@ var actionResolver = function (data) {
             }
         };
         
-        var actionCatcher = function (request) {
+        var actionCatcher = function (data) {
+            var request = data[0];
+            var target = data[1];
+            
+            enableModalSubmitButton(target)
+
             if (request && typeof request.responseJSON === 'object') {
                 $.admin.toastr.error(request.responseJSON.message, '', {positionClass:"toast-bottom-center", timeOut: 10000}).css("width","500px")
             }
         };
+
 SCRIPT;
 
         Admin::script($resolve);

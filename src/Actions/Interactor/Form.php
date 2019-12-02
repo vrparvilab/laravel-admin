@@ -492,7 +492,9 @@ SCRIPT;
                 for (var key in data) {
                     formData.append(key, data[key]);
                 }
-                
+
+                disableModalSubmitButton(target)
+
                 $.ajax({
                     method: '{$this->action->getMethod()}',
                     url: '{$this->action->getHandleRoute()}',
@@ -507,7 +509,7 @@ SCRIPT;
                         }
                     },
                     error:function(request){
-                        reject(request);
+                        reject([request, target]);
                     }
                 });
             });
