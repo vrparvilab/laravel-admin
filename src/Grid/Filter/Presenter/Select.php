@@ -250,6 +250,7 @@ EOT;
         return [
             'options' => $this->buildOptions(),
             'class'   => $this->getElementClass(),
+            'group'   => $this->filter->group,
         ];
     }
 
