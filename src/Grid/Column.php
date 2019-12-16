@@ -327,7 +327,7 @@ class Column
      */
     public function width(int $width)
     {
-        return $this->style("width: {$width}px;");
+        return $this->style("width: {$width}px;max-width: {$width}px;word-wrap: break-word;word-break: normal;");
     }
 
     /**
@@ -467,7 +467,7 @@ class Column
     /**
      * Set column filter.
      *
-     * @param null $builder
+     * @param mixed|null $builder
      *
      * @return $this
      */
