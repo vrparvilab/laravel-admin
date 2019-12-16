@@ -1392,7 +1392,7 @@ class Form implements Renderable
      */
     public function isEditing(): bool
     {
-        return Str::endsWith(\request()->route()->getName(), '.edit', '.update');
+        return Str::endsWith(\request()->route()->getName(), ['.edit', '.update']);
     }
 
     /**
