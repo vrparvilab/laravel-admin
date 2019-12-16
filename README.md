@@ -156,3 +156,7 @@ Other
 License
 ------------
 `laravel-admin` is licensed under [The MIT License (MIT)](LICENSE).
+
+Merge changes from parent
+------------
+https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks
