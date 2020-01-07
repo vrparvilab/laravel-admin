@@ -165,22 +165,6 @@ class MakeCommand extends GeneratorCommand
     }
 
     /**
-     * Get the default namespace for the class.
-     *
-     * @param string $rootNamespace
-     *
-     * @return string
-     */
-    protected function getDefaultNamespace($rootNamespace)
-    {
-        if ($namespace = $this->option('namespace')) {
-            return $namespace;
-        }
-
-        return config('admin.route.namespace');
-    }
-
-    /**
      * Get the desired class name from the input.
      *
      * @return string
@@ -192,5 +176,14 @@ class MakeCommand extends GeneratorCommand
         $this->type = $this->qualifyClass($name);
 
         return $name;
+    }
+
+    protected function rootNamespace()
+    {
+        if ($namespace = $this->option('namespace')) {
+            return $namespace;
+        }
+
+        return config('admin.route.namespace');
     }
 }
