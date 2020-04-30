@@ -225,6 +225,13 @@ class Form implements Renderable
     protected static $initCallbacks;
 
     /**
+     * Initialization closure array.
+     *
+     * @var Closure
+     */
+    protected $newQueryCallback;
+
+    /**
      * Create a new form instance.
      *
      * @param $model
@@ -292,9 +299,25 @@ class Form implements Renderable
     /**
      * @return Model|\Illuminate\Database\Eloquent\Builder
      */
-    public function model()
+    public function model(): Model
     {
         return $this->model;
+    }
+
+    public function newQueryCallback(Closure $callback)
+    {
+        $this->newQueryCallback = $callback;
+    }
+
+    public function newQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = $this->model()->newQuery();
+
+        if ($this->newQueryCallback && $this->newQueryCallback instanceof Closure) {
+            call_user_func($this->newQueryCallback, $query);
+        }
+
+        return $query;
     }
 
     /**
@@ -377,7 +400,7 @@ class Form implements Renderable
             }
 
             collect(explode(',', $id))->filter()->each(function ($id) {
-                $builder = $this->model()->newQuery();
+                $builder = $this->newQuery();
 
                 if ($this->isSoftDeletes) {
                     $builder = $builder->withTrashed();
@@ -601,7 +624,7 @@ class Form implements Renderable
         }
 
         /* @var Model $this->model */
-        $builder = $this->model();
+        $builder = $this->newQuery();
 
         if ($this->isSoftDeletes) {
             $builder = $builder->withTrashed();
@@ -1141,7 +1164,7 @@ class Form implements Renderable
     {
         $relations = $this->getRelations();
 
-        $builder = $this->model();
+        $builder = $this->newQuery();
 
         if ($this->isSoftDeletes) {
             $builder = $builder->withTrashed();
