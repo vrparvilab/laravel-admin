@@ -290,9 +290,9 @@ class Form implements Renderable
     }
 
     /**
-     * @return Model
+     * @return Model|\Illuminate\Database\Eloquent\Builder
      */
-    public function model(): Model
+    public function model()
     {
         return $this->model;
     }
