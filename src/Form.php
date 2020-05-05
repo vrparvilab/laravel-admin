@@ -676,7 +676,7 @@ class Form implements Renderable
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    protected function redirectAfterStore()
+    public function redirectAfterStore()
     {
         $resourcesPath = $this->resource(0);
 
@@ -692,7 +692,7 @@ class Form implements Renderable
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    protected function redirectAfterUpdate($key)
+    public function redirectAfterUpdate($key)
     {
         $resourcesPath = $this->resource(-1);
 
