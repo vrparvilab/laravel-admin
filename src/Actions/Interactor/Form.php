@@ -24,6 +24,16 @@ class Form extends Interactor
     protected $modalId;
 
     /**
+     * @var string
+     */
+    protected $modalSize = '';
+
+    /**
+     * @var string
+     */
+    protected $confirm = '';
+
+    /**
      * @param string $label
      *
      * @return array
@@ -42,6 +52,22 @@ class Form extends Interactor
     public function text($column, $label = '')
     {
         $field = new Field\Text($column, $this->formatLabel($label));
+
+        $this->addField($field);
+
+        return $field;
+    }
+
+    /**
+     * @param $column
+     * @param string   $label
+     * @param \Closure $builder
+     *
+     * @return Field\Table
+     */
+    public function table($column, $label = '', $builder = null)
+    {
+        $field = new Field\Table($column, [$label, $builder]);
 
         $this->addField($field);
 
@@ -236,6 +262,21 @@ class Form extends Interactor
      * @param string $column
      * @param string $label
      *
+     * @return Field\MultipleFile
+     */
+    public function multipleFile($column, $label = '')
+    {
+        $field = new Field\MultipleFile($column, $this->formatLabel($label));
+
+        $this->addField($field);
+
+        return $field;
+    }
+
+    /**
+     * @param string $column
+     * @param string $label
+     *
      * @return Field\Image
      */
     public function image($column, $label = '')
@@ -243,6 +284,21 @@ class Form extends Interactor
         $field = new Field\Image($column, $this->formatLabel($label));
 
         $this->addField($field)->setView('admin::actions.form.file');
+
+        return $field;
+    }
+
+    /**
+     * @param string $column
+     * @param string $label
+     *
+     * @return Field\MultipleImage
+     */
+    public function multipleImage($column, $label = '')
+    {
+        $field = new Field\MultipleImage($column, $this->formatLabel($label));
+
+        $this->addField($field)->setView('admin::actions.form.muitplefile');
 
         return $field;
     }
@@ -297,6 +353,38 @@ class Form extends Interactor
         $this->addField($field);
 
         return $field;
+    }
+
+    /**
+     * @param $message
+     *
+     * @return $this
+     */
+    public function confirm($message)
+    {
+        $this->confirm = $message;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function modalLarge()
+    {
+        $this->modalSize = 'modal-lg';
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function modalSmall()
+    {
+        $this->modalSize = 'modal-sm';
+
+        return $this;
     }
 
     /**
@@ -407,9 +495,10 @@ class Form extends Interactor
     public function addModalHtml()
     {
         $data = [
-            'fields'   => $this->fields,
-            'title'    => $this->action->name(),
-            'modal_id' => $this->getModalId(),
+            'fields'     => $this->fields,
+            'title'      => $this->action->name(),
+            'modal_id'   => $this->getModalId(),
+            'modal_size' => $this->modalSize,
         ];
 
         $modal = view('admin::actions.form.modal', $data)->render();
@@ -467,20 +556,56 @@ SCRIPT;
     }
 
     /**
-     * @throws \Exception
-     *
      * @return string
      */
-    protected function buildActionPromise()
+    protected function buildConfirmActionPromise()
     {
-        if ($this->action instanceof RowAction) {
-            call_user_func([$this->action, 'form'], $this->action->getRow());
-        } else {
-            call_user_func([$this->action, 'form']);
-        }
+        $trans = [
+            'cancel' => trans('admin.cancel'),
+            'submit' => trans('admin.submit'),
+        ];
 
-        $this->addModalHtml();
+        $settings = [
+            'type'                => 'question',
+            'showCancelButton'    => true,
+            'showLoaderOnConfirm' => true,
+            'confirmButtonText'   => $trans['submit'],
+            'cancelButtonText'    => $trans['cancel'],
+            'title'               => $this->confirm,
+            'text'                => '',
+        ];
 
+        $settings = trim(substr(json_encode($settings, JSON_PRETTY_PRINT), 1, -1));
+
+        return <<<PROMISE
+        var process = $.admin.swal({
+            {$settings},
+            preConfirm: function() {
+                {$this->buildGeneralActionPromise()}
+
+                return process;
+            }
+        }).then(function(result) {
+
+            if (typeof result.dismiss !== 'undefined') {
+                return Promise.reject();
+            }
+
+            var result = result.value[0];
+
+            if (typeof result.status === "boolean") {
+                var response = result;
+            } else {
+                var response = result.value;
+            }
+
+            return [response, target];
+        });
+PROMISE;
+    }
+
+    protected function buildGeneralActionPromise()
+    {
         return <<<SCRIPT
             var process = new Promise(function (resolve,reject) {
                 Object.assign(data, {
@@ -514,5 +639,27 @@ SCRIPT;
                 });
             });
 SCRIPT;
+    }
+
+    /**
+     * @throws \Exception
+     *
+     * @return string
+     */
+    protected function buildActionPromise()
+    {
+        if ($this->action instanceof RowAction) {
+            call_user_func([$this->action, 'form'], $this->action->getRow());
+        } else {
+            call_user_func([$this->action, 'form']);
+        }
+
+        $this->addModalHtml();
+
+        if (!empty($this->confirm)) {
+            return $this->buildConfirmActionPromise();
+        }
+
+        return $this->buildGeneralActionPromise();
     }
 }

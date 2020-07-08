@@ -28,10 +28,14 @@ use Illuminate\Http\Request;
  * @method Field\Radio          radio($column, $label = '')
  * @method Field\File           file($column, $label = '')
  * @method Field\Image          image($column, $label = '')
+ * @method Field\MultipleFile   multipleFile($column, $label = '')
+ * @method Field\MultipleImage  multipleImage($column, $label = '')
  * @method Field\Date           date($column, $label = '')
  * @method Field\Datetime       datetime($column, $label = '')
  * @method Field\Time           time($column, $label = '')
  * @method Field\Hidden         hidden($column, $label = '')
+ * @method $this                modalLarge()
+ * @method $this                modalSmall()
  */
 abstract class Action implements Renderable
 {
@@ -300,7 +304,7 @@ SCRIPT;
     {
         return <<<SCRIPT
         var process = new Promise(function (resolve,reject) {
-            
+
             Object.assign(data, {
                 _token: $.admin.token,
                 _action: '{$this->getCalledClass()}',
@@ -341,25 +345,29 @@ var actionResolver = function (data) {
             if (typeof response !== 'object') {
                 return $.admin.swal({type: 'error', title: 'Oops!'});
             }
-            
+
             var then = function (then) {
                 if (then.action == 'refresh') {
                     $.admin.reload();
                 }
-                
+
                 if (then.action == 'download') {
                     window.open(then.value, '_blank');
                 }
-                
+
                 if (then.action == 'redirect') {
                     $.admin.redirect(then.value);
                 }
-                
+
                 if (then.action == 'location') {
                     window.location = then.value;
                 }
+
+                if (then.action == 'oepn') {
+                    window.open(this.value, '_blank');
+                }
             };
-            
+
             if (typeof response.html === 'string') {
                 target.html(response.html);
             }
@@ -367,11 +375,11 @@ var actionResolver = function (data) {
             if (typeof response.swal === 'object') {
                 $.admin.swal(response.swal);
             }
-            
+
             if (typeof response.toastr === 'object' && response.toastr.type) {
                 $.admin.toastr[response.toastr.type](response.toastr.content, '', response.toastr.options);
             }
-            
+
             if (response.then) {
               then(response.then);
             }

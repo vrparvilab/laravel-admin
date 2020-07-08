@@ -5,6 +5,7 @@ namespace Encore\Admin\Form;
 use Closure;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
+use Encore\Admin\Widgets\Form as WidgetForm;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Arr;
@@ -459,6 +460,20 @@ class Field implements Renderable
     }
 
     /**
+     * Set Widget/Form as field parent.
+     *
+     * @param WidgetForm $form
+     *
+     * @return $this
+     */
+    public function setWidgetForm(WidgetForm $form)
+    {
+        $this->form = $form;
+
+        return $this;
+    }
+
+    /**
      * Set width for field and label.
      *
      * @param int $field
@@ -704,7 +719,7 @@ class Field implements Renderable
             $rules = array_filter(explode('|', $rules));
         }
 
-        if (!$this->form) {
+        if (!$this->form || !$this->form instanceof Form) {
             return $rules;
         }
 
@@ -807,9 +822,9 @@ class Field implements Renderable
      *
      * @param array $data
      *
-     * @return $this
+     * @return mixed
      */
-    public function data(array $data = null): self
+    public function data(array $data = null)
     {
         if ($data === null) {
             return $this->data;
@@ -1096,6 +1111,18 @@ class Field implements Renderable
     }
 
     /**
+     * Add a divider after this field.
+     *
+     * @return $this
+     */
+    public function divider()
+    {
+        $this->form->divider();
+
+        return $this;
+    }
+
+    /**
      * Prepare for a field value before update or insert.
      *
      * @param $value
@@ -1184,7 +1211,7 @@ class Field implements Renderable
      *
      * @return mixed
      */
-    protected function getElementClassString()
+    public function getElementClassString()
     {
         $elementClass = $this->getElementClass();
 
@@ -1206,7 +1233,7 @@ class Field implements Renderable
      *
      * @return string|array
      */
-    protected function getElementClassSelector()
+    public function getElementClassSelector()
     {
         $elementClass = $this->getElementClass();
 
@@ -1270,8 +1297,7 @@ class Field implements Renderable
      *
      * @return $this
      */
-    public function setGroupClass($class)
-    : self
+    public function setGroupClass($class): self
     {
         if (is_array($class)) {
             $this->groupClass = array_merge($this->groupClass, $class);
@@ -1289,8 +1315,7 @@ class Field implements Renderable
      *
      * @return string
      */
-    protected function getGroupClass($default = false)
-    : string
+    protected function getGroupClass($default = false): string
     {
         return ($default ? 'form-group ' : '').implode(' ', array_filter($this->groupClass));
     }
@@ -1319,7 +1344,7 @@ class Field implements Renderable
      *
      * @return $this
      */
-    protected function addVariables(array $variables = []): self
+    public function addVariables(array $variables = []): self
     {
         $this->variables = array_merge($this->variables, $variables);
 
@@ -1329,8 +1354,7 @@ class Field implements Renderable
     /**
      * @return string
      */
-    public function getLabelClass()
-    : string
+    public function getLabelClass(): string
     {
         return implode(' ', $this->labelClass);
     }
@@ -1340,8 +1364,7 @@ class Field implements Renderable
      *
      * @return self
      */
-    public function setLabelClass(array $labelClass)
-    : self
+    public function setLabelClass(array $labelClass): self
     {
         $this->labelClass = $labelClass;
 
@@ -1483,7 +1506,19 @@ class Field implements Renderable
 
         Admin::script($this->script);
 
-        return view($this->getView(), $this->variables());
+        return Admin::component($this->getView(), $this->variables());
+    }
+
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
+     */
+    protected function fieldRender(array $variables = [])
+    {
+        if (!empty($variables)) {
+            $this->addVariables($variables);
+        }
+
+        return self::render();
     }
 
     /**
