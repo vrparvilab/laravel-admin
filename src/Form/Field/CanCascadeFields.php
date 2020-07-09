@@ -67,7 +67,7 @@ trait CanCascadeFields
         $this->form->cascadeGroup($closure, [
             'column' => $this->column(),
             'index'  => count($this->conditions) - 1,
-            'class'  => $this->getCascadeClass($value),
+            'class'  => $this->getCascadeClass($operator, $value),
         ]);
     }
 
@@ -86,13 +86,13 @@ trait CanCascadeFields
      *
      * @return string
      */
-    protected function getCascadeClass($value)
+    protected function getCascadeClass($operator, $value)
     {
         if (is_array($value)) {
             $value = implode('-', $value);
         }
 
-        return sprintf('cascade-%s-%s', $this->getElementClassString(), $value);
+        return sprintf('cascade-%s-%s-%s', $this->getElementClassString(), substr(md5($operator), 0, 6), $value);
     }
 
     /**
@@ -164,7 +164,7 @@ trait CanCascadeFields
 
         $cascadeGroups = collect($this->conditions)->map(function ($condition) {
             return [
-                'class'    => $this->getCascadeClass($condition['value']),
+                'class'    => $this->getCascadeClass($condition['operator'], $condition['value']),
                 'operator' => $condition['operator'],
                 'value'    => $condition['value'],
             ];
@@ -220,25 +220,37 @@ SCRIPT;
      */
     protected function getFormFrontValue()
     {
-        switch (get_class($this)) {
-            case Radio::class:
-            case RadioButton::class:
-            case RadioCard::class:
-            case Select::class:
-            case BelongsTo::class:
-            case BelongsToMany::class:
-            case MultipleSelect::class:
-                return 'var checked = $(this).val();';
-            case Checkbox::class:
-            case CheckboxButton::class:
-            case CheckboxCard::class:
-                return <<<SCRIPT
+        $availableValues = [
+            [
+                'types' => [
+                    Radio::class, RadioButton::class, RadioCard::class, Select::class, BelongsTo::class, BelongsToMany::class, MultipleSelect::class
+                ],
+                'value' => function() {
+                    return 'var checked = $(this).val();';
+                }
+            ],
+            [
+                'types' => [
+                    Checkbox::class, CheckboxButton::class, CheckboxCard::class
+                ],
+                'value' => function() {
+                    return <<<SCRIPT
 var checked = $('{$this->getElementClassSelector()}:checked').map(function(){
   return $(this).val();
 }).get();
 SCRIPT;
-            default:
-                throw new \InvalidArgumentException('Invalid form field type');
+                }
+            ],
+        ];
+
+        foreach ($availableValues as $group) {
+            foreach ($group['types'] as $fieldType) {
+                if ($this instanceof $fieldType) {
+                    return $group['value']();
+                }
+            }
         }
+
+        throw new \InvalidArgumentException('Invalid form field type');
     }
 }
