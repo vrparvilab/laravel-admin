@@ -344,7 +344,16 @@ class Model
     public function addConditions(array $conditions)
     {
         foreach ($conditions as $condition) {
-            call_user_func_array([$this, key($condition)], current($condition));
+            $subMethod = key($condition);
+            $subCondition = current($condition);
+
+            if ($subMethod === 'where' && count($subCondition) === 2 && strpos('.', $subCondition[0]) === false) {
+                // если это колонка из таблицы этой модели, то давим к ней имя таблицы
+                // иначе при сортировках по релейшинам, возникают проблемы
+                $subCondition[0] = $this->model->getTable() . "." . $subCondition[0];
+            }
+
+            call_user_func_array([$this, $subMethod], $subCondition);
         }
 
         return $this;
@@ -381,7 +390,6 @@ class Model
         $this->queries->unique()->each(function ($query) {
             $this->model = call_user_func_array([$this->model, $query['method']], $query['arguments']);
         });
-
         if ($this->model instanceof Collection) {
             return $this->model;
         }
