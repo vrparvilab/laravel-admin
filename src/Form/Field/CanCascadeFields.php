@@ -209,6 +209,8 @@ trait CanCascadeFields
             }
         });
     })
+
+    $('{$this->getElementClassSelector()}').trigger('{$this->cascadeEvent}');
 })();
 SCRIPT;
 
