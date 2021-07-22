@@ -350,7 +350,9 @@ class Model
             if ($subMethod === 'where' && count($subCondition) === 2 && strpos('.', $subCondition[0]) === false) {
                 // если это колонка из таблицы этой модели, то давим к ней имя таблицы
                 // иначе при сортировках по релейшинам, возникают проблемы
-                $subCondition[0] = $this->model->getTable() . "." . $subCondition[0];
+                $table = $this->model->getQuery()->from;
+
+                $subCondition[0] = $table . "." . $subCondition[0];
             }
 
             call_user_func_array([$this, $subMethod], $subCondition);
@@ -366,7 +368,7 @@ class Model
      */
     public function getTable()
     {
-        return $this->model->getTable();
+        return $this->model->getQuery()->from;
     }
 
     /**
@@ -585,10 +587,10 @@ class Model
         })) {
             $relation = $this->model->$relationName();
 
-            $this->queries->push([
+            /*$this->queries->push([
                 'method'    => 'select',
                 'arguments' => [$this->model->getTable().'.*'],
-            ]);
+            ]);*/
 
             $this->queries->push([
                 'method'    => 'leftJoin',
