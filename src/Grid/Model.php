@@ -350,7 +350,13 @@ class Model
             if ($subMethod === 'where' && count($subCondition) === 2 && strpos('.', $subCondition[0]) === false) {
                 // если это колонка из таблицы этой модели, то давим к ней имя таблицы
                 // иначе при сортировках по релейшинам, возникают проблемы
-                $table = $this->model->getQuery()->from;
+                if ($this->model instanceof \ItStably\LaravelClickHouse\Database\Eloquent\Builder) {
+                    $table = (string)$this->model->getQuery()->getFrom()->getTable();
+                } else if($this->model instanceof \Illuminate\Database\Eloquent\Builder) {
+                    $table = $this->model->getQuery()->from;
+                } else {
+                    $table = $this->model->getTable();
+                }
 
                 $subCondition[0] = $table . "." . $subCondition[0];
             }
