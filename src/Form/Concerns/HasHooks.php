@@ -135,6 +135,18 @@ trait HasHooks
     }
 
     /**
+     * Set beforeSave callback.
+     *
+     * @param Closure $callback
+     *
+     * @return $this
+     */
+    public function beforeSave(Closure $callback)
+    {
+        return $this->registerHook('beforeSave', $callback);
+    }
+
+    /**
      * @param Closure $callback
      *
      * @return $this
@@ -192,6 +204,16 @@ trait HasHooks
     protected function callSaved()
     {
         return $this->callHooks('saved');
+    }
+
+    /**
+     * Callback after saving event but before save method.
+     *
+     * @return mixed|null
+     */
+    protected function callBeforeSave()
+    {
+        return $this->callHooks('beforeSave');
     }
 
     /**

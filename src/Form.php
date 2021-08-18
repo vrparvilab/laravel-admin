@@ -171,6 +171,11 @@ class Form implements Renderable
         return $this->model;
     }
 
+    public function getInputs(): array
+    {
+        return $this->inputs;
+    }
+
     public function newQueryCallback(Closure $callback)
     {
         $this->newQueryCallback = $callback;
@@ -354,13 +359,17 @@ class Form implements Renderable
             return $response;
         }
 
+        $inserts = $this->prepareInsert($this->updates);
+
+        foreach ($inserts as $column => $value) {
+            $this->model->setAttribute($column, $value);
+        }
+
+        if (($response = $this->callBeforeSave()) instanceof Response) {
+            return $response;
+        }
+
         DB::transaction(function () {
-            $inserts = $this->prepareInsert($this->updates);
-
-            foreach ($inserts as $column => $value) {
-                $this->model->setAttribute($column, $value);
-            }
-
             $this->model->save();
 
             $this->updateRelation($this->relations);
